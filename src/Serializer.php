@@ -5,8 +5,23 @@ namespace gapple\StructuredFields;
 class Serializer
 {
 
+    /**
+     * Serialize and item with optional parameters.
+     *
+     * @param $value
+     *   A bare value, or an Item object.
+     * @param object|null $parameters
+     *
+     * @return string
+     *   The serialized value.
+     */
     public static function serializeItem($value, ?object $parameters = null): string
     {
+        if ($value instanceof Item) {
+            $parameters = $value->parameters;
+            $value = $value->value;
+        }
+
         $output = self::serializeBareItem($value);
 
         if (!empty($parameters)) {
@@ -16,8 +31,12 @@ class Serializer
         return $output;
     }
 
-    public static function serializeList(array $value): string
+    public static function serializeList($value): string
     {
+        if ($value instanceof OuterList) {
+            $value = iterator_to_array($value->getIterator());
+        }
+
         $returnValue = array_map(function ($item) {
             if (is_array($item[0])) {
                 return self::serializeInnerList($item[0], $item[1]);
